@@ -1,498 +1,259 @@
-
-/* 保留现有的CSS变量定义 */
-:root {
-  --primary-color: #2563eb;
-  --primary-hover: #1d4ed8;
-  --background-blur: rgba(255, 255, 255, 0.8);
-  --border-color: rgba(255, 255, 255, 0.2);
-  --shadow-color: rgba(0, 0, 0, 0.1);
-  --text-primary: #1f2937;
-  --text-secondary: #4b5563;
-  --highlight-color: rgba(37, 99, 235, 0.1);
-}
-
-/* 图层控制面板样式 */
-.layers-control {
-  margin: 16px;
-  background: var(--background-blur);
-  backdrop-filter: blur(12px);
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-  box-shadow: 0 2px 4px var(--shadow-color);
-  padding: 16px;
-  animation: fadeIn 0.3s ease-out;
-}
-
-.layers-control h3 {
-  color: var(--text-primary);
-  font-weight: 600;
-  margin: 0 0 16px 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 1rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.layers-control h3::before {
-  content: '';
-  display: inline-block;
-  width: 4px;
-  height: 16px;
-  background: var(--primary-color);
-  border-radius: 2px;
-}
-
-.layer-item {
-  margin-bottom: 12px;
-  padding: 12px;
-  background: rgba(255, 255, 255, 0.7);
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  transition: all 0.3s ease;
-}
-
-.layer-item:hover {
-  background: rgba(255, 255, 255, 0.9);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px var(--shadow-color);
-}
-
-.layer-item.active {
-  border-color: var(--primary-color);
-  background: rgba(37, 99, 235, 0.05);
-}
-
-.layer-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.layer-visibility {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.layer-visibility input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-  border: 2px solid var(--border-color);
-  border-radius: 4px;
-  appearance: none;
-  background: white;
-  position: relative;
-  transition: all 0.2s ease;
-}
-
-.layer-visibility input[type="checkbox"]:checked {
-  background: var(--primary-color);
-  border-color: var(--primary-color);
-}
-
-.layer-visibility input[type="checkbox"]:checked::after {
-  content: '';
-  position: absolute;
-  left: 4px;
-  top: 1px;
-  width: 4px;
-  height: 8px;
-  border: solid white;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
-}
-
-.visibility-label {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  user-select: none;
-}
-
-.layer-name {
-  flex: 1;
-  font-size: 0.9rem;
-  color: var(--text-primary);
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.layer-controls {
-  display: flex;
-  gap: 8px;
-}
-
-.toggle-table-button {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background: white;
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.8rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-}
-
-.toggle-table-button:hover {
-  background: var(--highlight-color);
-  border-color: var(--primary-color);
-  transform: translateY(-1px);
-}
-
-.toggle-table-button.active {
-  background: var(--primary-color);
-  color: white;
-  border-color: var(--primary-color);
-}
-
-.toggle-table-button svg {
-  transition: transform 0.2s ease;
-}
-
-.toggle-table-button:hover svg {
-  transform: scale(1.1);
-}
-
-.toggle-table-button.active svg {
-  stroke: white;
-}
-
-/* 保留现有的容器样式 */
+/* 容器布局 */
 .container {
   display: flex;
   height: 100vh;
   width: 100vw;
+  overflow: hidden;
   position: relative;
-  background: #f8fafc;
 }
 
-/* 保留现有的GitHub链接样式 */
-.github-link {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  z-index: 1000;
-  background: var(--background-blur);
-  backdrop-filter: blur(12px);
-  border-radius: 50%;
-  padding: 8px;
-  box-shadow: 0 4px 6px var(--shadow-color);
-  transition: all 0.3s ease;
-  border: 1px solid var(--border-color);
-}
-
-.github-link:hover {
-  transform: scale(1.1) rotate(360deg);
-  box-shadow: 0 6px 12px var(--shadow-color);
-}
-
-.github-link svg {
-  display: block;
-  fill: var(--primary-color);
-  transition: fill 0.3s ease;
-}
-
-.github-link:hover svg {
-  fill: var(--primary-hover);
-}
-
-/* 保留现有的地图容器样式 */
 .map-container {
   flex: 1;
   height: 100%;
   position: relative;
 }
 
-/* 保留现有的侧边栏样式 */
 .sidebar {
   width: 400px;
   height: 100%;
-  display: flex;
-  flex-direction: column;
-  background: var(--background-blur);
-  backdrop-filter: blur(12px);
-  border-left: 1px solid var(--border-color);
-  box-shadow: -4px 0 15px var(--shadow-color);
-  transition: all 0.3s ease;
+  background: #fff;
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
-}
-
-/* 保留现有的拖放区域样式 */
-.dropzone {
-  padding: 32px;
-  border: 2px dashed var(--border-color);
-  border-radius: 16px;
-  margin: 16px;
-  cursor: pointer;
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(8px);
-  transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 240px;
+  gap: 1rem;
+  padding: 1rem;
 }
 
-.dropzone.drag-over {
-  border-color: var(--primary-color);
-  background: rgba(255, 255, 255, 0.8);
-  transform: scale(1.02);
-}
-
-.dropzone:hover {
-  border-color: var(--primary-color);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px var(--shadow-color);
-}
-
-.dropzone.loading {
-  pointer-events: none;
-  opacity: 0.8;
-}
-
-/* 保留现有的其他样式 */
-.dropzone-content {
-  text-align: center;
-  color: var(--text-primary);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-}
-
-.upload-icon {
-  width: 64px;
-  height: 64px;
-  color: var(--primary-color);
-  opacity: 0.8;
-  margin-bottom: 8px;
-}
-
-.upload-text {
-  font-size: 1.25rem;
-  font-weight: 500;
-  color: var(--text-primary);
-  margin: 8px 0;
-}
-
-.dropzone-content .small {
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  max-width: 80%;
-  line-height: 1.5;
-}
-
-/* 保留现有的加载动画样式 */
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-}
-
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid rgba(37, 99, 235, 0.1);
+/* GitHub链接 */
+.github-link {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1000;
+  background: white;
   border-radius: 50%;
-  border-top-color: var(--primary-color);
-  animation: spin 1s linear infinite;
+  padding: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+.github-link:hover {
+  transform: scale(1.1);
 }
 
-/* 保留现有的错误提示样式 */
-.error {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
-  background: rgba(239, 68, 68, 0.1);
+/* 图层控制面板 */
+.layers-control {
+  background: #f5f5f5;
   border-radius: 8px;
-  color: #ef4444;
-  font-size: 0.875rem;
-  margin-top: 16px;
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  padding: 1rem;
 }
 
-.error svg {
-  flex-shrink: 0;
-  color: #ef4444;
+.layers-control h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  color: #333;
 }
 
-/* 保留现有的属性部分样式 */
-.properties-section {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 16px;
-  overflow: hidden;
-  animation: slideIn 0.3s ease-out;
-  margin-bottom: 16px;
+.layer-item {
+  background: white;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  padding: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.properties-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(12px);
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-  box-shadow: 0 2px 4px var(--shadow-color);
-}
-
-.properties-header h3 {
-  color: var(--text-primary);
-  font-weight: 600;
-  margin: 0;
+.layer-header {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
-/* 保留现有的表格样式 */
-.table-container {
+.layer-visibility {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.layer-name {
   flex: 1;
-  overflow: auto;
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-  box-shadow: 0 4px 6px var(--shadow-color);
-  margin-top: 16px;
-  position: relative;
-}
-
-.properties-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  font-size: 0.9rem;
-}
-
-.properties-table thead {
-  position: sticky;
-  top: 0;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(12px);
-  z-index: 1;
-  box-shadow: 0 2px 4px var(--shadow-color);
-}
-
-.properties-table th {
-  padding: 16px 12px;
-  text-align: left;
-  border-bottom: 2px solid var(--border-color);
-  font-weight: 600;
-  white-space: nowrap;
-  color: var(--text-primary);
-  text-transform: uppercase;
-  font-size: 0.75rem;
-  letter-spacing: 0.05em;
-}
-
-.properties-table td {
-  padding: 12px;
-  border-bottom: 1px solid var(--border-color);
-  color: var(--text-secondary);
-  transition: all 0.2s ease;
-  max-width: 200px;
+  font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.properties-table tr {
-  transition: all 0.2s ease;
-  position: relative;
+.layer-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.toggle-table-button {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.toggle-table-button:hover {
+  background: #f0f0f0;
+}
+
+.toggle-table-button.active {
+  background: #e6f7ff;
+  border-color: #91d5ff;
+  color: #1890ff;
+}
+
+/* 文件上传区域 */
+.dropzone {
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #fafafa;
+}
+
+.dropzone:hover,
+.dropzone.drag-over {
+  border-color: #40a9ff;
+  background: #e6f7ff;
+}
+
+.dropzone-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.upload-icon {
+  width: 48px;
+  height: 48px;
+  color: #666;
+  margin-bottom: 1rem;
+}
+
+.upload-text {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #333;
+  margin: 0;
+}
+
+.small {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* 加载状态 */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 错误提示 */
+.error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #ff4d4f;
+  background: #fff2f0;
+  border: 1px solid #ffccc7;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  margin-top: 1rem;
+}
+
+/* 属性表 */
+.properties-section {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.properties-header {
+  padding: 1rem;
+  background: #f5f5f5;
+  border-bottom: 1px solid #ddd;
+}
+
+.properties-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.table-container {
+  overflow-x: auto;
+  max-height: 300px;
+}
+
+.properties-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.properties-table th,
+.properties-table td {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.properties-table th {
+  background: #f5f5f5;
+  font-weight: 500;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 .properties-table tr:hover {
-  background-color: rgba(255, 255, 255, 0.9);
-  cursor: pointer;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px var(--shadow-color);
+  background: #f0f0f0;
 }
 
 .properties-table tr.selected {
-  background-color: var(--highlight-color);
-  border-left: 4px solid var(--primary-color);
+  background: #e6f7ff;
 }
 
-/* 保留现有的动画 */
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateX(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* 保留现有的响应式设计 */
+/* 响应式调整 */
 @media (max-width: 768px) {
   .container {
     flex-direction: column;
   }
-  
+
   .sidebar {
     width: 100%;
-    height: 50vh;
-    border-left: none;
-    border-top: 1px solid var(--border-color);
+    height: 40%;
   }
-  
+
   .map-container {
-    height: 50vh;
+    height: 60%;
   }
-}
-
-/* 保留现有的地图控件样式 */
-.leaflet-control-container .leaflet-control {
-  background: var(--background-blur) !important;
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--border-color) !important;
-  border-radius: 8px !important;
-  box-shadow: 0 2px 4px var(--shadow-color) !important;
-}
-
-.leaflet-control-zoom-in,
-.leaflet-control-zoom-out {
-  color: var(--text-primary) !important;
-  transition: all 0.3s ease !important;
-}
-
-.leaflet-control-zoom-in:hover,
-.leaflet-control-zoom-out:hover {
-  background: rgba(255, 255, 255, 0.9) !important;
-  color: var(--primary-color) !important;
 }
