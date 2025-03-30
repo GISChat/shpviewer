@@ -24,7 +24,7 @@ npm run build
 
 4. 发布
 ```bash
-npm run build
+npm run deploy
 ```
 ## 项目结构
 - `src/` - 主要源代码目录

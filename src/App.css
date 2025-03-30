@@ -1,4 +1,5 @@
 
+/* 保留现有的CSS变量定义 */
 :root {
   --primary-color: #2563eb;
   --primary-hover: #1d4ed8;
@@ -10,6 +11,161 @@
   --highlight-color: rgba(37, 99, 235, 0.1);
 }
 
+/* 图层控制面板样式 */
+.layers-control {
+  margin: 16px;
+  background: var(--background-blur);
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 4px var(--shadow-color);
+  padding: 16px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.layers-control h3 {
+  color: var(--text-primary);
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.layers-control h3::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 16px;
+  background: var(--primary-color);
+  border-radius: 2px;
+}
+
+.layer-item {
+  margin-bottom: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.layer-item:hover {
+  background: rgba(255, 255, 255, 0.9);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px var(--shadow-color);
+}
+
+.layer-item.active {
+  border-color: var(--primary-color);
+  background: rgba(37, 99, 235, 0.05);
+}
+
+.layer-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.layer-visibility {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.layer-visibility input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  border: 2px solid var(--border-color);
+  border-radius: 4px;
+  appearance: none;
+  background: white;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.layer-visibility input[type="checkbox"]:checked {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.layer-visibility input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 4px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.visibility-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  user-select: none;
+}
+
+.layer-name {
+  flex: 1;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.layer-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.toggle-table-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: white;
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.toggle-table-button:hover {
+  background: var(--highlight-color);
+  border-color: var(--primary-color);
+  transform: translateY(-1px);
+}
+
+.toggle-table-button.active {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.toggle-table-button svg {
+  transition: transform 0.2s ease;
+}
+
+.toggle-table-button:hover svg {
+  transform: scale(1.1);
+}
+
+.toggle-table-button.active svg {
+  stroke: white;
+}
+
+/* 保留现有的容器样式 */
 .container {
   display: flex;
   height: 100vh;
@@ -18,6 +174,7 @@
   background: #f8fafc;
 }
 
+/* 保留现有的GitHub链接样式 */
 .github-link {
   position: absolute;
   top: 20px;
@@ -47,12 +204,14 @@
   fill: var(--primary-hover);
 }
 
+/* 保留现有的地图容器样式 */
 .map-container {
   flex: 1;
   height: 100%;
   position: relative;
 }
 
+/* 保留现有的侧边栏样式 */
 .sidebar {
   width: 400px;
   height: 100%;
@@ -63,9 +222,10 @@
   border-left: 1px solid var(--border-color);
   box-shadow: -4px 0 15px var(--shadow-color);
   transition: all 0.3s ease;
-  overflow: hidden;
+  overflow-y: auto;
 }
 
+/* 保留现有的拖放区域样式 */
 .dropzone {
   padding: 32px;
   border: 2px dashed var(--border-color);
@@ -99,6 +259,7 @@
   opacity: 0.8;
 }
 
+/* 保留现有的其他样式 */
 .dropzone-content {
   text-align: center;
   color: var(--text-primary);
@@ -130,7 +291,7 @@
   line-height: 1.5;
 }
 
-/* 加载动画 */
+/* 保留现有的加载动画样式 */
 .loading-container {
   display: flex;
   flex-direction: column;
@@ -153,7 +314,7 @@
   }
 }
 
-/* 错误提示样式 */
+/* 保留现有的错误提示样式 */
 .error {
   display: flex;
   align-items: center;
@@ -172,14 +333,7 @@
   color: #ef4444;
 }
 
-.error {
-  color: #ef4444;
-  margin-top: 12px;
-  padding: 8px;
-  border-radius: 6px;
-  background: rgba(239, 68, 68, 0.1);
-}
-
+/* 保留现有的属性部分样式 */
 .properties-section {
   flex: 1;
   display: flex;
@@ -187,17 +341,7 @@
   padding: 16px;
   overflow: hidden;
   animation: slideIn 0.3s ease-out;
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateX(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+  margin-bottom: 16px;
 }
 
 .properties-header {
@@ -222,68 +366,7 @@
   gap: 8px;
 }
 
-.properties-header h3::before {
-  content: '';
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  background: var(--primary-color);
-  border-radius: 50%;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.5);
-    opacity: 0.5;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-.toggle-button {
-  padding: 8px 16px;
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 4px var(--shadow-color);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.9rem;
-}
-
-.toggle-button:hover {
-  background: var(--primary-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px var(--shadow-color);
-}
-
-.toggle-button:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 4px var(--shadow-color);
-}
-
-.toggle-button svg {
-  width: 16px;
-  height: 16px;
-  transition: transform 0.3s ease;
-}
-
-.toggle-button:hover svg {
-  transform: rotate(180deg);
-}
-
+/* 保留现有的表格样式 */
 .table-container {
   flex: 1;
   overflow: auto;
@@ -352,18 +435,16 @@
   border-left: 4px solid var(--primary-color);
 }
 
-.properties-table tr.selected td:first-child {
-  padding-left: 8px;
-}
-
-.properties-table tr.selected:hover {
-  background-color: rgba(37, 99, 235, 0.15);
-}
-
-/* 添加表格行动画效果 */
-.properties-table tbody tr {
-  animation: fadeIn 0.3s ease-out;
-  animation-fill-mode: both;
+/* 保留现有的动画 */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @keyframes fadeIn {
@@ -377,64 +458,7 @@
   }
 }
 
-/* 优化表格滚动条 */
-.table-container::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-.table-container::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.table-container::-webkit-scrollbar-thumb {
-  background: rgba(203, 213, 225, 0.5);
-  border-radius: 3px;
-}
-
-.table-container::-webkit-scrollbar-thumb:hover {
-  background: rgba(203, 213, 225, 0.8);
-}
-
-/* 添加表格空状态样式 */
-.table-empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 48px 24px;
-  color: var(--text-secondary);
-  text-align: center;
-}
-
-.table-empty-state svg {
-  width: 48px;
-  height: 48px;
-  color: var(--text-secondary);
-  opacity: 0.5;
-  margin-bottom: 16px;
-}
-
-/* 自定义滚动条 */
-.table-container::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-.table-container::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.table-container::-webkit-scrollbar-thumb {
-  background: rgba(203, 213, 225, 0.5);
-  border-radius: 4px;
-}
-
-.table-container::-webkit-scrollbar-thumb:hover {
-  background: rgba(203, 213, 225, 0.8);
-}
-
-/* 添加响应式设计 */
+/* 保留现有的响应式设计 */
 @media (max-width: 768px) {
   .container {
     flex-direction: column;
@@ -452,23 +476,7 @@
   }
 }
 
-/* 添加动画效果 */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.properties-section {
-  animation: fadeIn 0.3s ease-out;
-}
-
-/* 优化地图控件样式 */
+/* 保留现有的地图控件样式 */
 .leaflet-control-container .leaflet-control {
   background: var(--background-blur) !important;
   backdrop-filter: blur(12px);

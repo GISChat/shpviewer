@@ -2,14 +2,58 @@ import React, { useState, useCallback, useRef, useMemo } from 'react';
 import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet';
 import JSZip from 'jszip';
 import * as shapefile from 'shapefile';
+import L from 'leaflet';
+import { 
+  transformCoordinates, 
+  parsePrjContent, 
+  detectProjection, 
+  getTargetProjection 
+} from './utils/projection';
 import './App.css';
 
+// 使用Web墨卡托投影（如果为false则使用WGS84）
+const USE_WEB_MERCATOR = false;
+
+// 从GeoJSON计算边界
+const getBoundsFromGeoJSON = (geojson) => {
+  if (!geojson || !geojson.features || geojson.features.length === 0) return null;
+
+  let minLng = Infinity;
+  let maxLng = -Infinity;
+  let minLat = Infinity;
+  let maxLat = -Infinity;
+
+  const processCoordinates = (coords) => {
+    if (Array.isArray(coords[0])) {
+      coords.forEach(processCoordinates);
+    } else {
+      const [lng, lat] = coords;
+      minLng = Math.min(minLng, lng);
+      maxLng = Math.max(maxLng, lng);
+      minLat = Math.min(minLat, lat);
+      maxLat = Math.max(maxLat, lat);
+    }
+  };
+
+  geojson.features.forEach(feature => {
+    if (feature.geometry && feature.geometry.coordinates) {
+      processCoordinates(feature.geometry.coordinates);
+    }
+  });
+
+  if (minLng === Infinity || maxLng === -Infinity || minLat === Infinity || maxLat === -Infinity) {
+    return null;
+  }
+
+  return [[minLat, minLng], [maxLat, maxLng]];
+};
+
 function App() {
-  const [geoJsonData, setGeoJsonData] = useState(null);
+  // 多图层数据管理
+  const [layers, setLayers] = useState([]);
   const githubUrl = 'https://github.com/GISChat/shpviewer';
-  const [allFeatures, setAllFeatures] = useState([]);
   const [selectedFeatureId, setSelectedFeatureId] = useState(null);
-  const [showTable, setShowTable] = useState(true);
+  const [selectedLayerId, setSelectedLayerId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const fileInputRef = useRef(null);
@@ -33,13 +77,14 @@ function App() {
     try {
       setLoading(true);
       setError(null);
-      setSelectedFeatureId(null);
       const fileMap = {};
+      let fileName = '';
 
       // 处理多个文件或ZIP文件
       if (files[0]?.name.endsWith('.zip')) {
         const zip = new JSZip();
         const contents = await zip.loadAsync(files[0]);
+        fileName = files[0].name.split('.')[0];
         
         for (const [filename, zipEntry] of Object.entries(contents.files)) {
           const ext = filename.split('.').pop().toLowerCase();
@@ -49,6 +94,7 @@ function App() {
         }
       } else {
         // 处理多个单独的文件
+        fileName = files[0]?.name.split('.')[0];
         for (const file of files) {
           const ext = file.name.split('.').pop().toLowerCase();
           if (['shp', 'dbf', 'shx', 'prj', 'cpg'].includes(ext)) {
@@ -62,6 +108,15 @@ function App() {
         throw new Error('缺少.shp文件');
       }
 
+      // 获取投影信息
+      let sourceProjection = 'EPSG:4326'; // 默认使用WGS84
+      if (fileMap.prj) {
+        const decoder = new TextDecoder('utf-8');
+        const prjContent = decoder.decode(fileMap.prj);
+        const parsedPrj = parsePrjContent(prjContent);
+        sourceProjection = detectProjection(parsedPrj);
+      }
+
       // 解析shapefile
       const source = await shapefile.open(fileMap.shp, fileMap.dbf);
       const features = [];
@@ -73,13 +128,39 @@ function App() {
       // 添加唯一ID到每个要素
       const featuresWithIds = addIdsToFeatures(features);
       
-      const geojson = {
+      let geojson = {
         type: 'FeatureCollection',
         features: featuresWithIds
       };
 
-      setGeoJsonData(geojson);
-      setAllFeatures(featuresWithIds);
+      // 进行投影转换
+      const targetProjection = getTargetProjection(USE_WEB_MERCATOR);
+      if (sourceProjection !== targetProjection) {
+        geojson = transformCoordinates(geojson, sourceProjection, targetProjection);
+      }
+
+      // 创建新图层
+      const newLayer = {
+        id: `layer-${Date.now()}`,
+        name: fileName || `图层 ${layers.length + 1}`,
+        data: geojson,
+        features: geojson.features,
+        visible: true,
+        showTable: true,
+        sourceProjection,
+        targetProjection
+      };
+
+      setLayers(prevLayers => [...prevLayers, newLayer]);
+      setSelectedLayerId(newLayer.id);
+
+      // 如果这是第一个图层，设置地图视图
+      if (layers.length === 0 && map) {
+        const bounds = getBoundsFromGeoJSON(geojson);
+        if (bounds) {
+          map.fitBounds(bounds, { padding: [50, 50] });
+        }
+      }
     } catch (error) {
       console.error('Error processing file:', error);
       setError(error.message || '处理文件时发生错误');
@@ -97,49 +178,75 @@ function App() {
   }, []);
 
   // GeoJSON样式控制
-  const getGeoJSONStyle = useCallback((feature) => {
-    const isSelected = feature.id === selectedFeatureId;
+  const getGeoJSONStyle = useCallback((feature, layerId) => {
+    const isSelected = feature.id === selectedFeatureId && layerId === selectedLayerId;
     return {
       fillColor: isSelected ? '#ff7800' : '#3388ff',
       weight: isSelected ? 3 : 2,
       opacity: 1,
       color: isSelected ? '#ff7800' : '#3388ff',
       fillOpacity: isSelected ? 0.7 : 0.4,
-      // 添加交互状态
       interactive: true
     };
-  }, [selectedFeatureId]);
+  }, [selectedFeatureId, selectedLayerId]);
 
-  // 用于重置所有图层样式的函数
-  const resetLayerStyles = useCallback((layer) => {
-    if (layer && layer.setStyle) {
-      layer.setStyle(getGeoJSONStyle(layer.feature));
-    }
-  }, [getGeoJSONStyle]);
-
-  // 存储所有图层的引用
+  // 存储所有图层的引用，使用嵌套Map：layerId -> featureId -> layer
   const layerRefs = useRef(new Map());
 
+  // 用于重置所有图层样式的函数
+  const resetAllLayerStyles = useCallback(() => {
+    layerRefs.current.forEach((featureMap, layerId) => {
+      featureMap.forEach((layer, featureId) => {
+        if (layer && layer.setStyle) {
+          const feature = layer.feature;
+          layer.setStyle(getGeoJSONStyle(feature, layerId));
+        }
+      });
+    });
+  }, [getGeoJSONStyle]);
+
+  // 高亮显示选中的要素
+  const highlightFeature = useCallback((featureId, layerId) => {
+    setSelectedFeatureId(featureId);
+    setSelectedLayerId(layerId);
+    resetAllLayerStyles();
+
+    // 获取要素的图层并调整地图视图
+    const featureLayer = layerRefs.current.get(layerId)?.get(featureId);
+    if (featureLayer && map) {
+      const bounds = featureLayer.getBounds();
+      map.fitBounds(bounds.pad(0.5), {
+        animate: true,
+        duration: 1
+      });
+    }
+
+    // 确保选中的要素属性行可见
+    const element = document.getElementById(`row-${layerId}-${featureId}`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [map, resetAllLayerStyles]);
+
   // GeoJSON事件处理
-  const onEachFeature = useCallback((feature, layer) => {
+  const onEachFeature = useCallback((feature, layer, layerId) => {
+    // 为feature添加layerId
+    feature.layerId = layerId;
+    
+    // 确保该图层的Map存在
+    if (!layerRefs.current.has(layerId)) {
+      layerRefs.current.set(layerId, new Map());
+    }
+    
     // 保存图层引用
-    layerRefs.current.set(feature.id, layer);
+    layerRefs.current.get(layerId).set(feature.id, layer);
 
     layer.on({
       click: () => {
-        setSelectedFeatureId(feature.id);
-        // 更新所有图层的样式
-        layerRefs.current.forEach((l) => {
-          resetLayerStyles(l);
-        });
-        // 确保选中的要素属性行可见
-        const element = document.getElementById(`row-${feature.id}`);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
+        highlightFeature(feature.id, layerId);
       }
     });
-  }, [resetLayerStyles]);
+  }, [highlightFeature]);
 
   return (
     <div className="container">
@@ -155,21 +262,74 @@ function App() {
           style={{ height: '100%', width: '100%' }}
           ref={mapRef}
           whenCreated={onMapCreated}
+          crs={USE_WEB_MERCATOR ? L.CRS.EPSG3857 : L.CRS.EPSG4326}
         >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
-          {geoJsonData && (
+          {layers.map(layer => (
             <GeoJSON 
-              data={geoJsonData}
-              style={getGeoJSONStyle}
-              onEachFeature={onEachFeature}
+              key={layer.id}
+              data={layer.data}
+              style={(feature) => getGeoJSONStyle(feature, layer.id)}
+              onEachFeature={(feature, geoLayer) => onEachFeature(feature, geoLayer, layer.id)}
+              {...(!layer.visible && { style: { opacity: 0, fillOpacity: 0 } })}
             />
-          )}
+          ))}
         </MapContainer>
       </div>
       <div className="sidebar">
+        {layers.length > 0 && (
+          <div className="layers-control">
+            <h3>图层控制面板</h3>
+            {layers.map(layer => (
+              <div key={layer.id} className={`layer-item ${layer.visible ? 'active' : ''}`}>
+                <div className="layer-header">
+                  <div className="layer-visibility">
+                    <input
+                      type="checkbox"
+                      id={`visibility-${layer.id}`}
+                      checked={layer.visible}
+                      onChange={() => {
+                        setLayers(prevLayers =>
+                          prevLayers.map(l =>
+                            l.id === layer.id ? { ...l, visible: !l.visible } : l
+                          )
+                        );
+                      }}
+                    />
+                    <label htmlFor={`visibility-${layer.id}`} className="visibility-label">
+                      {layer.visible ? '显示' : '隐藏'}
+                    </label>
+                  </div>
+                  <span className="layer-name" title={layer.name}>{layer.name}</span>
+                  <div className="layer-controls">
+                    <button
+                      className={`toggle-table-button ${layer.showTable ? 'active' : ''}`}
+                      onClick={() => {
+                        setLayers(prevLayers =>
+                          prevLayers.map(l =>
+                            l.id === layer.id ? { ...l, showTable: !l.showTable } : l
+                          )
+                        );
+                      }}
+                      title={layer.showTable ? '隐藏属性表' : '显示属性表'}
+                    >
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d={layer.showTable 
+                          ? "M3 10h18M3 14h18M3 18h18M3 6h18" 
+                          : "M3 9h18M3 15h18"} 
+                        />
+                      </svg>
+                      {layer.showTable ? '隐藏属性' : '显示属性'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
         <div
           className={`dropzone ${loading ? 'loading' : ''}`}
           onDrop={onDrop}
@@ -222,59 +382,35 @@ function App() {
           </div>
         </div>
 
-        {allFeatures.length > 0 && (
-          <div className="properties-section">
-            <div className="properties-header">
-              <h3>属性表 ({allFeatures.length} 个要素)</h3>
-              <button 
-                className="toggle-button"
-                onClick={() => setShowTable(!showTable)}
-              >
-                {showTable ? '隐藏表格' : '显示表格'}
-              </button>
-            </div>
-            
-            {showTable && (
+        {layers.map(layer => (
+          layer.showTable && (
+            <div key={layer.id} className="properties-section">
+              <div className="properties-header">
+                <h3>{layer.name} - 属性表 ({layer.features.length} 个要素)</h3>
+              </div>
+              
               <div className="table-container">
                 <table className="properties-table">
                   <thead>
                     <tr>
                       <th>要素ID</th>
                       {/* 使用第一个要素的属性来生成表头 */}
-                      {Object.keys(allFeatures[0]?.properties || {}).map(key => (
+                      {Object.keys(layer.features[0]?.properties || {}).map(key => (
                         <th key={key}>{key}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {allFeatures.map((feature) => (
+                    {layer.features.map((feature) => (
                       <tr 
-                        key={feature.id}
-                        id={`row-${feature.id}`}
-                        className={feature.id === selectedFeatureId ? 'selected' : ''}
-                        onClick={() => {
-                          setSelectedFeatureId(feature.id);
-                          // 更新所有图层的样式
-                          layerRefs.current.forEach((l) => {
-                            resetLayerStyles(l);
-                          });
-                          // 获取要素的图层
-                          const layer = layerRefs.current.get(feature.id);
-                          if (layer) {
-                            // 获取要素的边界
-                            const bounds = layer.getBounds();
-                            // 将地图视图平滑地飞到要素位置，并自动调整缩放级别
-                            // 添加一些边距以显示周围内容
-                            mapRef.current.fitBounds(bounds.pad(0.5), {
-                              animate: true,
-                              duration: 1
-                            });
-                          }
-                        }}
+                        key={`${layer.id}-${feature.id}`}
+                        id={`row-${layer.id}-${feature.id}`}
+                        className={feature.id === selectedFeatureId && layer.id === selectedLayerId ? 'selected' : ''}
+                        onClick={() => highlightFeature(feature.id, layer.id)}
                       >
                         <td>{feature.id}</td>
-                        {Object.keys(allFeatures[0]?.properties || {}).map(key => (
-                          <td key={`${feature.id}-${key}`}>
+                        {Object.keys(layer.features[0]?.properties || {}).map(key => (
+                          <td key={`${layer.id}-${feature.id}-${key}`}>
                             {String(feature.properties?.[key] || '')}
                           </td>
                         ))}
@@ -283,9 +419,9 @@ function App() {
                   </tbody>
                 </table>
               </div>
-            )}
-          </div>
-        )}
+            </div>
+          )
+        ))}
       </div>
     </div>
   );
