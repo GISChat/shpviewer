@@ -1,0 +1,9 @@
+autoOpen: true
+apps:
+  - port: 5173
+    run: npm install && npm run dev
+    root: ./
+    name: SHP File Viewer
+    description: A web application for viewing and analyzing SHP files
+    autoOpen: false
+    autoPreview: true
